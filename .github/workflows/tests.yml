@@ -54,6 +54,29 @@ jobs:
       - name: Run booking unit tests
         run: pytest booking-test.py
 
+  test-notification-unit:
+    name: Unit Test - Notification Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./notification-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run notification unit tests
+        run: pytest notification-test.py
+
   test-user-integration:
     name: Integration Test - User Service
     runs-on: ubuntu-latest
@@ -107,24 +130,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
           pytest order-integration.py
-
-  test-notification-integration:
-    name: Integration Test - Notification Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./notification-service
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - run: |
-          pip install -r requirements.txt
-          pip install pytest requests
-          pytest notification-integration.py
 
   test-e2e:
     name: End-to-End Test (All Services)
