@@ -1,4 +1,4 @@
-name: Full Microservices Test Pipeline
+name: Run all microservice tests
 
 on:
   push:
@@ -7,56 +7,136 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+
+  test-user-unit:
+    name: Unit Test - User Service
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./user-service
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: '3.10'
 
-      - name: Install test dependencies
+      - name: Install dependencies
         run: |
-          pip install -r user-service/requirements.txt
-          pip install -r booking-service/requirements.txt
-          pip install -r notification-service/requirements.txt
-          pip install -r order-service/requirements.txt
-          pip install pytest requests
+          pip install -r requirements.txt
+          pip install pytest
 
-      # ---------------- UNIT TESTS ----------------
-      - name: User Unit Tests
+      - name: Run user unit tests
         run: pytest user_test.py
-        working-directory: ./user-service
 
-      - name: Booking Unit Tests
+  test-booking-unit:
+    name: Unit Test - Booking Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./booking-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run booking unit tests
         run: pytest booking-test.py
-        working-directory: ./booking-service
 
-      - name: Notification Unit Tests
-        run: pytest notification-test.py
-        working-directory: ./notification-service
-
-      # ---------------- INTEGRATION TESTS ----------------
-      - name: User Integration Tests
-        run: pytest user-integration.py
+  test-user-integration:
+    name: Integration Test - User Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: ./user-service
 
-      - name: Booking Integration Tests
-        run: pytest booking-integration.py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest
+          pytest user-integration.py
+
+  test-booking-integration:
+    name: Integration Test - Booking Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: ./booking-service
 
-      - name: Order Integration Tests
-        run: pytest order-integration.py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest
+          pytest booking-integration.py
+
+  test-order-integration:
+    name: Integration Test - Order Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: ./order-service
 
-      - name: Notification Integration Tests
-        run: pytest notification-integration.py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest
+          pytest order-integration.py
+
+  test-notification-integration:
+    name: Integration Test - Notification Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
         working-directory: ./notification-service
 
-      # ---------------- END-TO-END TEST ----------------
-      - name: End-to-End Test
-        run: pytest end-to-end.py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest requests
+          pytest notification-integration.py
+
+  test-e2e:
+    name: End-to-End Test (All Services)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r order-service/requirements.txt
+          pip install pytest
+          pytest end-to-end.py
