@@ -1,1 +1,1 @@
-# final-project-3
+# booking-platform
