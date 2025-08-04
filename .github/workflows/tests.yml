@@ -7,13 +7,13 @@ on:
     branches: [ main ]
 
 jobs:
-
-  test-user-unit:
-    name: Unit Test - User Service
+  run-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./user-service
+
+    services:
+      docker:
+        image: docker:24.0.2
+        options: --privileged
 
     steps:
       - uses: actions/checkout@v4
@@ -23,151 +23,54 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install global test dependencies
         run: |
-          pip install -r requirements.txt
-          pip install pytest
+          pip install pytest requests
 
-      - name: Run user unit tests
+      - name: Start all services with Docker Compose
+        run: docker-compose up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          for i in {1..10}; do
+            curl --silent http://localhost:5000 || true
+            curl --silent http://localhost:5001 || true
+            curl --silent http://localhost:5002 || true
+            curl --silent http://localhost:5003 || true
+            echo "Waiting for services..."
+            sleep 5
+          done
+
+      # Unit tests
+      - name: Run unit tests - User
         run: pytest user_test.py
-
-  test-booking-unit:
-    name: Unit Test - Booking Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./booking-service
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest
-
-      - name: Run booking unit tests
-        run: pytest booking-test.py
-
-  test-user-integration:
-    name: Integration Test - User Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
         working-directory: ./user-service
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - run: |
-          pip install -r requirements.txt
-          pip install pytest
-          pytest user-integration.py
-
-  test-booking-integration:
-    name: Integration Test - Booking Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
+      - name: Run unit tests - Booking
+        run: pytest booking-test.py
         working-directory: ./booking-service
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+      - name: Run unit tests - Notification
+        run: pytest notification-test.py
+        working-directory: ./notification-service
 
-      - run: |
-          pip install -r requirements.txt
-          pip install pytest
-          pytest booking-integration.py
+      # Integration tests
+      - name: Run integration tests - User
+        run: pytest user-integration.py
+        working-directory: ./user-service
 
-  test-order-integration:
-    name: Integration Test - Order Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
+      - name: Run integration tests - Booking
+        run: pytest booking-integration.py
+        working-directory: ./booking-service
+
+      - name: Run integration tests - Order
+        run: pytest order-integration.py
         working-directory: ./order-service
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - run: |
-          pip install -r requirements.txt
-          pip install pytest
-          pytest order-integration.py
-
-  test-notification-unit:
-    name: Unit Test - Notification Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./notification-service
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt || true
-          pip install pytest
-          pip install "werkzeug<3"
-
-      - name: Run notification unit tests
-        run: pytest notification-test.py
-
-  test-notification-integration:
-    name: Integration Test - Notification Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./notification-service
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt || true
-          pip install pytest
-          pip install requests
-          pip install "werkzeug<3"
-
-      - name: Run notification integration tests
+      - name: Run integration tests - Notification
         run: pytest notification-integration.py
+        working-directory: ./notification-service
 
-  test-e2e:
-    name: End-to-End Test (All Services)
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - run: |
-          pip install -r order-service/requirements.txt
-          pip install pytest
-          pytest end-to-end.py
+      # End-to-End test
+      - name: Run end-to-end test
+        run: pytest end-to-end.py
