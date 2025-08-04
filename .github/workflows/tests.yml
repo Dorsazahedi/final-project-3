@@ -1,0 +1,124 @@
+name: Run all microservice tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  test-user-unit:
+    name: Unit Test - User Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./user-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run user unit tests
+        run: pytest user_test.py
+
+  test-booking-unit:
+    name: Unit Test - Booking Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./booking-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run booking unit tests
+        run: pytest booking-test.py
+
+  test-user-integration:
+    name: Integration Test - User Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./user-service
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest
+          pytest user-integration.py
+
+  test-booking-integration:
+    name: Integration Test - Booking Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./booking-service
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest
+          pytest booking-integration.py
+
+  test-order-integration:
+    name: Integration Test - Order Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./order-service
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r requirements.txt
+          pip install pytest
+          pytest order-integration.py
+
+  test-e2e:
+    name: End-to-End Test (All Services)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - run: |
+          pip install -r order-service/requirements.txt
+          pip install pytest
+          pytest end_to_end_test.py
