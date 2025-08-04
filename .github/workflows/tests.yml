@@ -17,12 +17,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - run: |
+
+      - name: Install dependencies
+        run: |
           pip install -r requirements.txt
           pip install pytest
+
       - name: Run user unit tests
         run: pytest user_test.py
 
@@ -35,32 +40,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - run: |
+
+      - name: Install dependencies
+        run: |
           pip install -r requirements.txt
           pip install pytest
+
       - name: Run booking unit tests
         run: pytest booking-test.py
-
-  test-notification-unit:
-    name: Unit Test - Notification Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./notification-service
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: |
-          pip install -r requirements.txt
-          pip install pytest
-      - name: Run notification unit tests
-        run: pytest notification-test.py
 
   test-user-integration:
     name: Integration Test - User Service
@@ -74,6 +66,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - run: |
           pip install -r requirements.txt
           pip install pytest
@@ -91,28 +84,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - run: |
           pip install -r requirements.txt
           pip install pytest
           pytest booking-integration.py
-
-  test-notification-integration:
-    name: Integration Test - Notification Service
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./notification-service
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: |
-          pip install -r requirements.txt
-          pip install pytest
-          pip install "werkzeug<3"
-          pytest notification-integration.py
 
   test-order-integration:
     name: Integration Test - Order Service
@@ -126,10 +102,60 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - run: |
           pip install -r requirements.txt
           pip install pytest
           pytest order-integration.py
+
+  test-notification-unit:
+    name: Unit Test - Notification Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./notification-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt || true
+          pip install pytest
+          pip install "werkzeug<3"
+
+      - name: Run notification unit tests
+        run: pytest notification-test.py
+
+  test-notification-integration:
+    name: Integration Test - Notification Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./notification-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt || true
+          pip install pytest
+          pip install requests
+          pip install "werkzeug<3"
+
+      - name: Run notification integration tests
+        run: pytest notification-integration.py
 
   test-e2e:
     name: End-to-End Test (All Services)
@@ -140,6 +166,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - run: |
           pip install -r order-service/requirements.txt
           pip install pytest
