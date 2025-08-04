@@ -54,7 +54,7 @@ jobs:
       - name: Run booking unit tests
         run: pytest booking-test.py
 
-  test-notification-unit:
+   test-notification-unit:
     name: Unit Test - Notification Service
     runs-on: ubuntu-latest
     defaults:
@@ -69,13 +69,15 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install dependencies with Werkzeug fix
         run: |
           pip install -r requirements.txt
           pip install pytest
+          pip install werkzeug==2.3.8
 
       - name: Run notification unit tests
         run: pytest notification-test.py
+
 
   test-user-integration:
     name: Integration Test - User Service
