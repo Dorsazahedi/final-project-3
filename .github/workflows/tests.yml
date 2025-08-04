@@ -121,4 +121,4 @@ jobs:
       - run: |
           pip install -r order-service/requirements.txt
           pip install pytest
-          pytest end_to_end_test.py
+          pytest end-to-end.py
