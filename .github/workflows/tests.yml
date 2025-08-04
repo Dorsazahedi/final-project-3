@@ -55,7 +55,7 @@ jobs:
       - name: Run booking unit tests
         run: pytest booking-test.py
 
-   test-notification-unit:
+  test-notification-unit:
     name: Unit Test - Notification Service
     runs-on: ubuntu-latest
     defaults:
