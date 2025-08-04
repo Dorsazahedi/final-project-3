@@ -1,4 +1,4 @@
-name: Run all microservice tests
+name: Full Microservices Test Pipeline
 
 on:
   push:
@@ -7,70 +7,56 @@ on:
     branches: [ main ]
 
 jobs:
-  run-tests:
+  test:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:24.0.2
-        options: --privileged
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: 3.10
 
-      - name: Install global test dependencies
+      - name: Install test dependencies
         run: |
+          pip install -r user-service/requirements.txt
+          pip install -r booking-service/requirements.txt
+          pip install -r notification-service/requirements.txt
+          pip install -r order-service/requirements.txt
           pip install pytest requests
 
-      - name: Start all services with Docker Compose
-        run: docker-compose up -d --build
-
-      - name: Wait for services to be ready
-        run: |
-          for i in {1..10}; do
-            curl --silent http://localhost:5000 || true
-            curl --silent http://localhost:5001 || true
-            curl --silent http://localhost:5002 || true
-            curl --silent http://localhost:5003 || true
-            echo "Waiting for services..."
-            sleep 5
-          done
-
-      # Unit tests
-      - name: Run unit tests - User
+      # ---------------- UNIT TESTS ----------------
+      - name: User Unit Tests
         run: pytest user_test.py
         working-directory: ./user-service
 
-      - name: Run unit tests - Booking
+      - name: Booking Unit Tests
         run: pytest booking-test.py
         working-directory: ./booking-service
 
-      - name: Run unit tests - Notification
+      - name: Notification Unit Tests
         run: pytest notification-test.py
         working-directory: ./notification-service
 
-      # Integration tests
-      - name: Run integration tests - User
+      # ---------------- INTEGRATION TESTS ----------------
+      - name: User Integration Tests
         run: pytest user-integration.py
         working-directory: ./user-service
 
-      - name: Run integration tests - Booking
+      - name: Booking Integration Tests
         run: pytest booking-integration.py
         working-directory: ./booking-service
 
-      - name: Run integration tests - Order
+      - name: Order Integration Tests
         run: pytest order-integration.py
         working-directory: ./order-service
 
-      - name: Run integration tests - Notification
+      - name: Notification Integration Tests
         run: pytest notification-integration.py
         working-directory: ./notification-service
 
-      # End-to-End test
-      - name: Run end-to-end test
+      # ---------------- END-TO-END TEST ----------------
+      - name: End-to-End Test
         run: pytest end-to-end.py
